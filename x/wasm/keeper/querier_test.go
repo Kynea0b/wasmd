@@ -708,15 +708,45 @@ func TestQueryPinnedCodes(t *testing.T) {
 			expCodeIDs: []uint64{exampleContract2.CodeID},
 		},
 	}
-	for msg, spec := range specs {
-		t.Run(msg, func(t *testing.T) {
+	for testName, spec := range specs {
+		fmt.Println("tetstest", testName)
+		t.Run(testName, func(t *testing.T) {
 			got, err := q.PinnedCodes(sdk.WrapSDKContext(ctx), spec.srcQuery)
-			if spec.expErr != nil {
-				assert.Nil(t, got)
-				assert.NotNil(t, err)
 
+			if testName == "req nil" {
+				assert.Nil(t, got)
+				assert.EqualError(t, spec.expErr, err.Error())
 				return
 			}
+
+			if testName == "with invalid pagination key" {
+				assert.Nil(t, got)
+				assert.EqualError(t, spec.expErr, err.Error())
+				return
+			}
+
+			if testName == "query all" {
+				assert.EqualValues(t, 2, got.Pagination.Total)
+				assert.EqualValues(t, 2, len(got.CodeIDs))
+
+			}
+
+			if testName == "with pagination offset" {
+				assert.EqualValues(t, 2, got.Pagination.Total)
+				assert.Nil(t, got.Pagination.NextKey)
+			}
+
+			if testName == "with pagination limit" {
+				assert.EqualValues(t, 8, len(got.Pagination.NextKey))
+				assert.EqualValues(t, 0, got.Pagination.Total)
+				assert.EqualValues(t, 1, len(got.CodeIDs))
+			}
+
+			if testName == "with pagination next key" {
+				assert.EqualValues(t, 0, got.Pagination.Total)
+				assert.Nil(t, got.Pagination.NextKey)
+			}
+
 			require.NotNil(t, got)
 			assert.Equal(t, spec.expCodeIDs, got.CodeIDs)
 		})
