@@ -662,19 +662,28 @@ func TestQueryPinnedCodes(t *testing.T) {
 
 	q := Querier(keeper)
 	specs := map[string]struct {
-		srcQuery   *types.QueryPinnedCodesRequest
-		expCodeIDs []uint64
-		expErr     error
+		paginationTotal         uint64
+		paginationNextKeyLength uint64
+		codeIdsLength           uint64
+		srcQuery                *types.QueryPinnedCodesRequest
+		expCodeIDs              []uint64
+		expErr                  error
 	}{
 		"req nil": {
 			srcQuery: nil,
 			expErr:   status.Error(codes.InvalidArgument, "empty request"),
 		},
 		"query all": {
-			srcQuery:   &types.QueryPinnedCodesRequest{},
-			expCodeIDs: []uint64{exampleContract1.CodeID, exampleContract2.CodeID},
+			paginationTotal:         2,
+			codeIdsLength:           2,
+			paginationNextKeyLength: 0,
+			srcQuery:                &types.QueryPinnedCodesRequest{},
+			expCodeIDs:              []uint64{exampleContract1.CodeID, exampleContract2.CodeID},
 		},
 		"with pagination offset": {
+			paginationTotal:         2,
+			codeIdsLength:           1,
+			paginationNextKeyLength: 0,
 			srcQuery: &types.QueryPinnedCodesRequest{
 				Pagination: &query.PageRequest{
 					Offset: 1,
@@ -692,6 +701,9 @@ func TestQueryPinnedCodes(t *testing.T) {
 			expErr: fmt.Errorf("invalid request, either offset or key is expected, got both"),
 		},
 		"with pagination limit": {
+			paginationTotal:         0,
+			codeIdsLength:           1,
+			paginationNextKeyLength: 8,
 			srcQuery: &types.QueryPinnedCodesRequest{
 				Pagination: &query.PageRequest{
 					Limit: 1,
@@ -700,6 +712,8 @@ func TestQueryPinnedCodes(t *testing.T) {
 			expCodeIDs: []uint64{exampleContract1.CodeID},
 		},
 		"with pagination next key": {
+			paginationTotal: 0,
+			codeIdsLength:   1,
 			srcQuery: &types.QueryPinnedCodesRequest{
 				Pagination: &query.PageRequest{
 					Key: fromBase64("AAAAAAAAAAM="),
@@ -708,17 +722,22 @@ func TestQueryPinnedCodes(t *testing.T) {
 			expCodeIDs: []uint64{exampleContract2.CodeID},
 		},
 	}
-	for msg, spec := range specs {
-		t.Run(msg, func(t *testing.T) {
+	for testName, spec := range specs {
+		t.Run(testName, func(t *testing.T) {
 			got, err := q.PinnedCodes(sdk.WrapSDKContext(ctx), spec.srcQuery)
-			if spec.expErr != nil {
-				assert.Nil(t, got)
-				assert.NotNil(t, err)
 
+			if testName == "req nil" || testName == "with invalid pagination key" {
+				assert.Nil(t, got)
+				assert.EqualError(t, spec.expErr, err.Error())
 				return
 			}
+
+			assert.EqualValues(t, spec.paginationTotal, got.Pagination.Total)
+			assert.EqualValues(t, spec.codeIdsLength, len(got.CodeIDs))
+			assert.EqualValues(t, spec.paginationNextKeyLength, len(got.Pagination.NextKey))
 			require.NotNil(t, got)
 			assert.Equal(t, spec.expCodeIDs, got.CodeIDs)
+
 		})
 	}
 }
