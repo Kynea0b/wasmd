@@ -754,31 +754,51 @@ func TestQueryPinnedCodes(t *testing.T) {
 }
 
 func TestQueryParams(t *testing.T) {
-	ctx, keepers := CreateTestInput(t, false, AvailableCapabilities)
-	keeper := keepers.WasmKeeper
+	specs := map[string]struct {
+		srcPermission types.AccessType
+		expInstConf   types.AccessConfig
+	}{
+		"default": {
+			srcPermission: types.DefaultParams().InstantiateDefaultPermission,
+			expInstConf:   types.AllowEverybody,
+		},
+		"everybody": {
+			srcPermission: types.AccessTypeEverybody,
+			expInstConf:   types.AllowEverybody,
+		},
+		"nobody": {
+			srcPermission: types.AccessTypeNobody,
+			expInstConf:   types.AllowNobody,
+		},
+	}
+	for msg, spec := range specs {
+		t.Run(msg, func(t *testing.T) {
+			ctx, keepers := CreateTestInput(t, false, AvailableCapabilities)
+			keeper := keepers.WasmKeeper
 
-	q := Querier(keeper)
+			q := Querier(keeper)
 
-	paramsResponse, err := q.Params(sdk.WrapSDKContext(ctx), &types.QueryParamsRequest{})
-	require.NoError(t, err)
-	require.NotNil(t, paramsResponse)
+			paramsResponse, err := q.Params(sdk.WrapSDKContext(ctx), &types.QueryParamsRequest{})
+			require.NoError(t, err)
+			require.NotNil(t, paramsResponse)
 
-	defaultParams := types.DefaultParams()
+			defaultParams := types.DefaultParams()
 
-	require.Equal(t, paramsResponse.Params.CodeUploadAccess, defaultParams.CodeUploadAccess)
-	require.Equal(t, paramsResponse.Params.InstantiateDefaultPermission, defaultParams.InstantiateDefaultPermission)
+			require.Equal(t, paramsResponse.Params.CodeUploadAccess, defaultParams.CodeUploadAccess)
+			require.Equal(t, paramsResponse.Params.InstantiateDefaultPermission, defaultParams.InstantiateDefaultPermission)
 
-	keeper.SetParams(ctx, types.Params{
-		CodeUploadAccess:             types.AllowNobody,
-		InstantiateDefaultPermission: types.AccessTypeNobody,
-	})
+			keeper.SetParams(ctx, types.Params{
+				CodeUploadAccess:             spec.expInstConf,
+				InstantiateDefaultPermission: spec.srcPermission,
+			})
 
-	paramsResponse, err = q.Params(sdk.WrapSDKContext(ctx), &types.QueryParamsRequest{})
-	require.NoError(t, err)
-	require.NotNil(t, paramsResponse)
-
-	require.Equal(t, paramsResponse.Params.CodeUploadAccess, types.AllowNobody)
-	require.Equal(t, paramsResponse.Params.InstantiateDefaultPermission, types.AccessTypeNobody)
+			paramsResponse, err = q.Params(sdk.WrapSDKContext(ctx), &types.QueryParamsRequest{})
+			require.NoError(t, err)
+			require.NotNil(t, paramsResponse)
+			require.Equal(t, spec.expInstConf, paramsResponse.Params.CodeUploadAccess)
+			require.Equal(t, spec.srcPermission, paramsResponse.Params.InstantiateDefaultPermission)
+		})
+	}
 }
 
 func TestQueryCodeInfo(t *testing.T) {
