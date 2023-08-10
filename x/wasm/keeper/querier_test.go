@@ -726,11 +726,11 @@ func TestQueryPinnedCodes(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			got, err := q.PinnedCodes(sdk.WrapSDKContext(ctx), spec.srcQuery)
 
-			if testName == "req nil" || testName == "with invalid pagination key" {
+			if spec.expErr != nil {
 				assert.Nil(t, got)
 				assert.EqualError(t, spec.expErr, err.Error())
 				return
-			}
+			} 
 
 			assert.EqualValues(t, spec.paginationTotal, got.Pagination.Total)
 			assert.EqualValues(t, spec.codeIdsLength, len(got.CodeIDs))
