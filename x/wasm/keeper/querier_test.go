@@ -800,7 +800,6 @@ func TestQueryPinnedCodes(t *testing.T) {
 			assert.EqualValues(t, spec.expResultTotal, got.Pagination.Total)
 			require.NotNil(t, got)
 			assert.Equal(t, spec.expCodeIDs, got.CodeIDs)
-
 		})
 	}
 }
