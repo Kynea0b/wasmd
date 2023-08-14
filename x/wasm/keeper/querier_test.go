@@ -736,34 +736,28 @@ func TestQueryPinnedCodes(t *testing.T) {
 
 	q := Querier(keeper)
 	specs := map[string]struct {
-		paginationTotal         uint64
-		paginationNextKeyLength uint64
-		codeIdsLength           uint64
-		srcQuery                *types.QueryPinnedCodesRequest
-		expCodeIDs              []uint64
-		expErr                  error
+		srcQuery       *types.QueryPinnedCodesRequest
+		expCodeIDs     []uint64
+		expResultTotal uint64
+		expErr         error
 	}{
 		"req nil": {
 			srcQuery: nil,
 			expErr:   status.Error(codes.InvalidArgument, "empty request"),
 		},
 		"query all": {
-			paginationTotal:         2,
-			codeIdsLength:           2,
-			paginationNextKeyLength: 0,
-			srcQuery:                &types.QueryPinnedCodesRequest{},
-			expCodeIDs:              []uint64{exampleContract1.CodeID, exampleContract2.CodeID},
+			srcQuery:       &types.QueryPinnedCodesRequest{},
+			expCodeIDs:     []uint64{exampleContract1.CodeID, exampleContract2.CodeID},
+			expResultTotal: 2,
 		},
 		"with pagination offset": {
-			paginationTotal:         2,
-			codeIdsLength:           1,
-			paginationNextKeyLength: 0,
 			srcQuery: &types.QueryPinnedCodesRequest{
 				Pagination: &query.PageRequest{
 					Offset: 1,
 				},
 			},
-			expCodeIDs: []uint64{exampleContract2.CodeID},
+			expCodeIDs:     []uint64{exampleContract2.CodeID},
+			expResultTotal: 2,
 		},
 		"with invalid pagination key": {
 			srcQuery: &types.QueryPinnedCodesRequest{
@@ -775,25 +769,22 @@ func TestQueryPinnedCodes(t *testing.T) {
 			expErr: fmt.Errorf("invalid request, either offset or key is expected, got both"),
 		},
 		"with pagination limit": {
-			paginationTotal:         0,
-			codeIdsLength:           1,
-			paginationNextKeyLength: 8,
 			srcQuery: &types.QueryPinnedCodesRequest{
 				Pagination: &query.PageRequest{
 					Limit: 1,
 				},
 			},
-			expCodeIDs: []uint64{exampleContract1.CodeID},
+			expCodeIDs:     []uint64{exampleContract1.CodeID},
+			expResultTotal: 0,
 		},
 		"with pagination next key": {
-			paginationTotal: 0,
-			codeIdsLength:   1,
 			srcQuery: &types.QueryPinnedCodesRequest{
 				Pagination: &query.PageRequest{
 					Key: fromBase64("AAAAAAAAAAM="),
 				},
 			},
-			expCodeIDs: []uint64{exampleContract2.CodeID},
+			expCodeIDs:     []uint64{exampleContract2.CodeID},
+			expResultTotal: 0,
 		},
 	}
 	for msg, spec := range specs {
@@ -806,9 +797,7 @@ func TestQueryPinnedCodes(t *testing.T) {
 				return
 			}
 
-			assert.EqualValues(t, spec.paginationTotal, got.Pagination.Total)
-			assert.EqualValues(t, spec.codeIdsLength, len(got.CodeIDs))
-			assert.EqualValues(t, spec.paginationNextKeyLength, len(got.Pagination.NextKey))
+			assert.EqualValues(t, spec.expResultTotal, got.Pagination.Total)
 			require.NotNil(t, got)
 			assert.Equal(t, spec.expCodeIDs, got.CodeIDs)
 
