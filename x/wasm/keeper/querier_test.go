@@ -722,15 +722,15 @@ func TestQueryPinnedCodes(t *testing.T) {
 			expCodeIDs: []uint64{exampleContract2.CodeID},
 		},
 	}
-	for testName, spec := range specs {
-		t.Run(testName, func(t *testing.T) {
+	for msg, spec := range specs {
+		t.Run(msg, func(t *testing.T) {
 			got, err := q.PinnedCodes(sdk.WrapSDKContext(ctx), spec.srcQuery)
 
 			if spec.expErr != nil {
 				assert.Nil(t, got)
 				assert.EqualError(t, spec.expErr, err.Error())
 				return
-			} 
+			}
 
 			assert.EqualValues(t, spec.paginationTotal, got.Pagination.Total)
 			assert.EqualValues(t, spec.codeIdsLength, len(got.CodeIDs))
