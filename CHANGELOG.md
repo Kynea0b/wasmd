@@ -3,8 +3,12 @@
 ## [Unreleased](https://github.com/Finschia/wasmd/compare/v0.1.4...HEAD)
 
 ### Features
+* [\#61](https://github.com/Finschia/wasmd/pull/61) bumpup ibc-go to v4
 
 ### Improvements
+* [\#63](https://github.com/Finschia/wasmd/pull/63) add event checking to TestStoreCode
+* [\#65](https://github.com/Finschia/wasmd/pull/65) add test cases for empty request in each function
+* [\#66](https://github.com/Finschia/wasmd/pull/66) add test cases for invalid pagination key in some functions
 
 ### Bug Fixes
 * [\#52](https://github.com/Finschia/wasmd/pull/52) fix cli_test error of wasmplus and add cli_test ci
@@ -12,8 +16,10 @@
 ### Breaking Changes
 
 ### Build, CI
+* [\#60](https://github.com/Finschia/wasmd/pull/60) Update golang version to 1.20
 
 ### Document Updates
+* [\#54](https://github.com/Finschia/wasmd/pull/54) add documentation about errors (codespace and codes)
 
 
 ## [v0.1.4](https://github.com/Finschia/wasmd/releases/tag/v0.1.4) - 2023.05.22
@@ -22,7 +28,7 @@
 * [\#46](https://github.com/Finschia/wasmd/pull/46) add admin-related events
 
 ### Improvements
-* [\#43](https://github.com/Finschia/wasmd/pull/43) delete unnecessary test 
+* [\#43](https://github.com/Finschia/wasmd/pull/43) delete unnecessary test
 
 ### Bug Fixes
 * [\#35](https://github.com/Finschia/wasmd/pull/35) stop wrap twice the response of handling non-plus wasm message in plus handler
