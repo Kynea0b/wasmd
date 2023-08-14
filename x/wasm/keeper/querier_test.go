@@ -736,19 +736,19 @@ func TestQueryPinnedCodes(t *testing.T) {
 
 	q := Querier(keeper)
 	specs := map[string]struct {
-		srcQuery       *types.QueryPinnedCodesRequest
-		expCodeIDs     []uint64
-		expResultTotal uint64
-		expErr         error
+		srcQuery           *types.QueryPinnedCodesRequest
+		expCodeIDs         []uint64
+		expPaginationTotal uint64
+		expErr             error
 	}{
 		"req nil": {
 			srcQuery: nil,
 			expErr:   status.Error(codes.InvalidArgument, "empty request"),
 		},
 		"query all": {
-			srcQuery:       &types.QueryPinnedCodesRequest{},
-			expCodeIDs:     []uint64{exampleContract1.CodeID, exampleContract2.CodeID},
-			expResultTotal: 2,
+			srcQuery:           &types.QueryPinnedCodesRequest{},
+			expCodeIDs:         []uint64{exampleContract1.CodeID, exampleContract2.CodeID},
+			expPaginationTotal: 2,
 		},
 		"with pagination offset": {
 			srcQuery: &types.QueryPinnedCodesRequest{
@@ -756,8 +756,8 @@ func TestQueryPinnedCodes(t *testing.T) {
 					Offset: 1,
 				},
 			},
-			expCodeIDs:     []uint64{exampleContract2.CodeID},
-			expResultTotal: 2,
+			expCodeIDs:         []uint64{exampleContract2.CodeID},
+			expPaginationTotal: 2,
 		},
 		"with invalid pagination key": {
 			srcQuery: &types.QueryPinnedCodesRequest{
@@ -774,8 +774,8 @@ func TestQueryPinnedCodes(t *testing.T) {
 					Limit: 1,
 				},
 			},
-			expCodeIDs:     []uint64{exampleContract1.CodeID},
-			expResultTotal: 0,
+			expCodeIDs:         []uint64{exampleContract1.CodeID},
+			expPaginationTotal: 0,
 		},
 		"with pagination next key": {
 			srcQuery: &types.QueryPinnedCodesRequest{
@@ -783,8 +783,8 @@ func TestQueryPinnedCodes(t *testing.T) {
 					Key: fromBase64("AAAAAAAAAAM="),
 				},
 			},
-			expCodeIDs:     []uint64{exampleContract2.CodeID},
-			expResultTotal: 0,
+			expCodeIDs:         []uint64{exampleContract2.CodeID},
+			expPaginationTotal: 0,
 		},
 	}
 	for msg, spec := range specs {
@@ -797,7 +797,7 @@ func TestQueryPinnedCodes(t *testing.T) {
 				return
 			}
 
-			assert.EqualValues(t, spec.expResultTotal, got.Pagination.Total)
+			assert.EqualValues(t, spec.expPaginationTotal, got.Pagination.Total)
 			require.NotNil(t, got)
 			assert.Equal(t, spec.expCodeIDs, got.CodeIDs)
 		})
