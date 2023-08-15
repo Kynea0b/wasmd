@@ -47,12 +47,14 @@ func TestQueryAllContractState(t *testing.T) {
 		expErr              error
 	}{
 		"query all": {
-			srcQuery:         &types.QueryAllContractStateRequest{Address: contractAddr.String()},
-			expModelContains: contractModel,
+			srcQuery:           &types.QueryAllContractStateRequest{Address: contractAddr.String()},
+			expModelContains:   contractModel,
+			expPaginationTotal: 3,
 		},
 		"query all with unknown address": {
-			srcQuery: &types.QueryAllContractStateRequest{Address: RandomBech32AccountAddress(t)},
-			expErr:   types.ErrNotFound,
+			srcQuery:           &types.QueryAllContractStateRequest{Address: RandomBech32AccountAddress(t)},
+			expErr:             types.ErrNotFound,
+			expPaginationTotal: 0,
 		},
 		"with pagination offset": {
 			srcQuery: &types.QueryAllContractStateRequest{
@@ -67,6 +69,7 @@ func TestQueryAllContractState(t *testing.T) {
 			expModelContainsNot: []types.Model{
 				{Key: []byte{0x0, 0x1}, Value: []byte(`{"count":8}`)},
 			},
+			expPaginationTotal: 3,
 		},
 		"with invalid pagination key": {
 			srcQuery: &types.QueryAllContractStateRequest{
@@ -91,6 +94,7 @@ func TestQueryAllContractState(t *testing.T) {
 			expModelContainsNot: []types.Model{
 				{Key: []byte("foo"), Value: []byte(`"bar"`)},
 			},
+			expPaginationTotal: 0,
 		},
 		"with pagination next key": {
 			srcQuery: &types.QueryAllContractStateRequest{
@@ -105,6 +109,7 @@ func TestQueryAllContractState(t *testing.T) {
 			expModelContainsNot: []types.Model{
 				{Key: []byte{0x0, 0x1}, Value: []byte(`{"count":8}`)},
 			},
+			expPaginationTotal: 0,
 		},
 		"with empty request": {
 			srcQuery: nil,
@@ -124,6 +129,8 @@ func TestQueryAllContractState(t *testing.T) {
 			for _, exp := range spec.expModelContainsNot {
 				assert.NotContains(t, got.Models, exp)
 			}
+			assert.EqualValues(t, spec.expPaginationTotal, got.Pagination.Total)
+
 		})
 	}
 }
