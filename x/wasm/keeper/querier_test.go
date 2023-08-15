@@ -43,6 +43,7 @@ func TestQueryAllContractState(t *testing.T) {
 		srcQuery            *types.QueryAllContractStateRequest
 		expModelContains    []types.Model
 		expModelContainsNot []types.Model
+		expPaginationTotal  uint64
 		expErr              error
 	}{
 		"query all": {
@@ -344,10 +345,11 @@ func TestQueryContractHistory(t *testing.T) {
 	)
 
 	specs := map[string]struct {
-		srcHistory []types.ContractCodeHistoryEntry
-		req        *types.QueryContractHistoryRequest
-		expContent []types.ContractCodeHistoryEntry
-		expErr     error
+		srcHistory         []types.ContractCodeHistoryEntry
+		req                *types.QueryContractHistoryRequest
+		expContent         []types.ContractCodeHistoryEntry
+		expPaginationTotal uint64
+		expErr             error
 	}{
 		"response with internal fields cleared": {
 			srcHistory: []types.ContractCodeHistoryEntry{{
@@ -362,6 +364,7 @@ func TestQueryContractHistory(t *testing.T) {
 				CodeID:    firstCodeID,
 				Msg:       []byte(`"init message"`),
 			}},
+			expPaginationTotal: 1,
 		},
 		"response with multiple entries": {
 			srcHistory: []types.ContractCodeHistoryEntry{{
@@ -394,6 +397,7 @@ func TestQueryContractHistory(t *testing.T) {
 				CodeID:    3,
 				Msg:       []byte(`"migrate message 2"`),
 			}},
+			expPaginationTotal: 3,
 		},
 		"with pagination offset": {
 			srcHistory: []types.ContractCodeHistoryEntry{{
@@ -418,6 +422,7 @@ func TestQueryContractHistory(t *testing.T) {
 				CodeID:    2,
 				Msg:       []byte(`"migrate message 1"`),
 			}},
+			expPaginationTotal: 2,
 		},
 		"with invalid pagination key": {
 			srcHistory: []types.ContractCodeHistoryEntry{{
@@ -459,6 +464,7 @@ func TestQueryContractHistory(t *testing.T) {
 				CodeID:    firstCodeID,
 				Msg:       []byte(`"init message"`),
 			}},
+			expPaginationTotal: 0,
 		},
 		"unknown contract address": {
 			req: &types.QueryContractHistoryRequest{Address: otherBech32Addr},
@@ -497,6 +503,7 @@ func TestQueryContractHistory(t *testing.T) {
 			}
 			require.NoError(t, err)
 			assert.Equal(t, spec.expContent, got.Entries)
+			assert.EqualValues(t, spec.expPaginationTotal, got.Pagination.Total)
 		})
 	}
 }
@@ -562,23 +569,27 @@ func TestQueryCodeList(t *testing.T) {
 	keeper := keepers.WasmKeeper
 
 	specs := map[string]struct {
-		storedCodeIDs []uint64
-		req           *types.QueryCodesRequest
-		expCodeIDs    []uint64
-		expErr        error
+		storedCodeIDs      []uint64
+		req                *types.QueryCodesRequest
+		expCodeIDs         []uint64
+		expPaginationTotal uint64
+		expErr             error
 	}{
 		"none": {
-			req: &types.QueryCodesRequest{},
+			req:                &types.QueryCodesRequest{},
+			expPaginationTotal: 0,
 		},
 		"no gaps": {
-			storedCodeIDs: []uint64{1, 2, 3},
-			req:           &types.QueryCodesRequest{},
-			expCodeIDs:    []uint64{1, 2, 3},
+			storedCodeIDs:      []uint64{1, 2, 3},
+			req:                &types.QueryCodesRequest{},
+			expCodeIDs:         []uint64{1, 2, 3},
+			expPaginationTotal: 3,
 		},
 		"with gaps": {
-			storedCodeIDs: []uint64{2, 4, 6},
-			req:           &types.QueryCodesRequest{},
-			expCodeIDs:    []uint64{2, 4, 6},
+			storedCodeIDs:      []uint64{2, 4, 6},
+			req:                &types.QueryCodesRequest{},
+			expCodeIDs:         []uint64{2, 4, 6},
+			expPaginationTotal: 3,
 		},
 		"with pagination offset": {
 			storedCodeIDs: []uint64{1, 2, 3},
@@ -587,7 +598,8 @@ func TestQueryCodeList(t *testing.T) {
 					Offset: 1,
 				},
 			},
-			expCodeIDs: []uint64{2, 3},
+			expCodeIDs:         []uint64{2, 3},
+			expPaginationTotal: 3,
 		},
 		"with invalid pagination key": {
 			storedCodeIDs: []uint64{1, 2, 3},
@@ -597,7 +609,8 @@ func TestQueryCodeList(t *testing.T) {
 					Key:    []byte("test"),
 				},
 			},
-			expErr: fmt.Errorf("invalid request, either offset or key is expected, got both"),
+			expPaginationTotal: 0,
+			expErr:             fmt.Errorf("invalid request, either offset or key is expected, got both"),
 		},
 		"with pagination limit": {
 			storedCodeIDs: []uint64{1, 2, 3},
@@ -606,7 +619,8 @@ func TestQueryCodeList(t *testing.T) {
 					Limit: 2,
 				},
 			},
-			expCodeIDs: []uint64{1, 2},
+			expCodeIDs:         []uint64{1, 2},
+			expPaginationTotal: 0,
 		},
 		"with pagination next key": {
 			storedCodeIDs: []uint64{1, 2, 3},
@@ -615,11 +629,13 @@ func TestQueryCodeList(t *testing.T) {
 					Key: fromBase64("AAAAAAAAAAI="),
 				},
 			},
-			expCodeIDs: []uint64{2, 3},
+			expCodeIDs:         []uint64{2, 3},
+			expPaginationTotal: 0,
 		},
 		"with empty request": {
-			req:    nil,
-			expErr: status.Error(codes.InvalidArgument, "empty request"),
+			req:                nil,
+			expErr:             status.Error(codes.InvalidArgument, "empty request"),
+			expPaginationTotal: 0,
 		},
 	}
 
@@ -644,6 +660,7 @@ func TestQueryCodeList(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, got.CodeInfos)
 			require.Len(t, got.CodeInfos, len(spec.expCodeIDs))
+			assert.EqualValues(t, spec.expPaginationTotal, got.Pagination.Total)
 			for i, exp := range spec.expCodeIDs {
 				assert.EqualValues(t, exp, got.CodeInfos[i].CodeID)
 			}
@@ -923,6 +940,7 @@ func TestQueryCodeInfoList(t *testing.T) {
 			codeInfo: codeInfoWithConfig(types.AccessTypeOnlyAddress.With(anyAddress)),
 		},
 	}
+	expPaginationTotal := 0
 
 	allCodesResponse := make([]types.CodeInfoResponse, 0)
 	for _, code := range codes {
@@ -949,6 +967,7 @@ func TestQueryCodeInfoList(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, got.CodeInfos, 3)
 	require.EqualValues(t, allCodesResponse, got.CodeInfos)
+	assert.EqualValues(t, expPaginationTotal, got.Pagination.Total)
 }
 
 func fromBase64(s string) []byte {
