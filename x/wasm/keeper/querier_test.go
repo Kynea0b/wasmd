@@ -52,9 +52,8 @@ func TestQueryAllContractState(t *testing.T) {
 			expPaginationTotal: 3,
 		},
 		"query all with unknown address": {
-			srcQuery:           &types.QueryAllContractStateRequest{Address: RandomBech32AccountAddress(t)},
-			expErr:             types.ErrNotFound,
-			expPaginationTotal: 0,
+			srcQuery: &types.QueryAllContractStateRequest{Address: RandomBech32AccountAddress(t)},
+			expErr:   types.ErrNotFound,
 		},
 		"with pagination offset": {
 			srcQuery: &types.QueryAllContractStateRequest{
@@ -616,8 +615,7 @@ func TestQueryCodeList(t *testing.T) {
 					Key:    []byte("test"),
 				},
 			},
-			expPaginationTotal: 0,
-			expErr:             fmt.Errorf("invalid request, either offset or key is expected, got both"),
+			expErr: fmt.Errorf("invalid request, either offset or key is expected, got both"),
 		},
 		"with pagination limit": {
 			storedCodeIDs: []uint64{1, 2, 3},
@@ -640,9 +638,8 @@ func TestQueryCodeList(t *testing.T) {
 			expPaginationTotal: 0,
 		},
 		"with empty request": {
-			req:                nil,
-			expErr:             status.Error(codes.InvalidArgument, "empty request"),
-			expPaginationTotal: 0,
+			req:    nil,
+			expErr: status.Error(codes.InvalidArgument, "empty request"),
 		},
 	}
 
