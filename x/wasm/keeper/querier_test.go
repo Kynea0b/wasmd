@@ -129,7 +129,6 @@ func TestQueryAllContractState(t *testing.T) {
 				assert.NotContains(t, got.Models, exp)
 			}
 			assert.EqualValues(t, spec.expPaginationTotal, got.Pagination.Total)
-
 		})
 	}
 }
