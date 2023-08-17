@@ -9,9 +9,15 @@
 * [\#63](https://github.com/Finschia/wasmd/pull/63) add event checking to TestStoreCode
 * [\#65](https://github.com/Finschia/wasmd/pull/65) add test cases for empty request in each function
 * [\#66](https://github.com/Finschia/wasmd/pull/66) add test cases for invalid pagination key in some functions
-* [\#66](https://github.com/Finschia/wasmd/pull/69) add test cases to Params
+* [\#64](https://github.com/Finschia/wasmd/pull/64) test: add test cases to confirm output for PinnedCodes
+* [\#70](https://github.com/Finschia/wasmd/pull/70) add event checking to TestInstantiateContract
+* [\#73](https://github.com/Finschia/wasmd/pull/73) test: add the check for expPaginationTotal
+* [\#72](https://github.com/Finschia/wasmd/pull/72) add pagination next key test in ContractHistory
+* [\#75](https://github.com/Finschia/wasmd/pull/75) test: add the test case for InactiveContract
+* [\#69](https://github.com/Finschia/wasmd/pull/69) add test cases to Params
 
 ### Bug Fixes
+* [\#62](https://github.com/Finschia/wasmd/pull/62) fill ContractHistory querier result's Updated field
 * [\#52](https://github.com/Finschia/wasmd/pull/52) fix cli_test error of wasmplus and add cli_test ci
 
 ### Breaking Changes
@@ -33,6 +39,7 @@
 
 ### Bug Fixes
 * [\#35](https://github.com/Finschia/wasmd/pull/35) stop wrap twice the response of handling non-plus wasm message in plus handler
+* [\#77](https://github.com/Finschia/wasmd/pull/77) use ctx cache in msg server integration test
 
 ### Document Updates
 * [\#44](https://github.com/Finschia/wasmd/pull/44) update notice
