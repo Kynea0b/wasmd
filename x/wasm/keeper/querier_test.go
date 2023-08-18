@@ -862,10 +862,6 @@ func TestQueryParams(t *testing.T) {
 
 	q := Querier(keeper)
 
-	paramsResponse, err := q.Params(sdk.WrapSDKContext(ctx), &types.QueryParamsRequest{})
-	require.NoError(t, err)
-	require.NotNil(t, paramsResponse)
-
 	specs := map[string]struct {
 		setParams types.Params
 		expParams types.Params
@@ -891,7 +887,7 @@ func TestQueryParams(t *testing.T) {
 			xCtx, _ := ctx.CacheContext()
 			keeper.SetParams(xCtx, spec.setParams)
 
-			paramsResponse, err = q.Params(sdk.WrapSDKContext(xCtx), &types.QueryParamsRequest{})
+			paramsResponse, err := q.Params(sdk.WrapSDKContext(xCtx), &types.QueryParamsRequest{})
 
 			require.NoError(t, err)
 			require.NotNil(t, paramsResponse)
