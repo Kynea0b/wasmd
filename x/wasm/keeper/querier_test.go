@@ -876,6 +876,10 @@ func TestQueryParams(t *testing.T) {
 		expParams types.Params
 		expErr    error
 	}{
+		"allowEverybody(DefaultParams)": {
+			setParams: types.DefaultParams(),
+			expParams: types.DefaultParams(),
+		},
 		"allowNobody": {
 			setParams: types.Params{
 				CodeUploadAccess:             types.AllowNobody,
