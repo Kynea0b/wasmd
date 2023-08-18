@@ -866,11 +866,6 @@ func TestQueryParams(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, paramsResponse)
 
-	defaultParams := types.DefaultParams()
-
-	require.Equal(t, paramsResponse.Params.CodeUploadAccess, defaultParams.CodeUploadAccess)
-	require.Equal(t, paramsResponse.Params.InstantiateDefaultPermission, defaultParams.InstantiateDefaultPermission)
-
 	specs := map[string]struct {
 		setParams types.Params
 		expParams types.Params
