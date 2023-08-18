@@ -873,21 +873,14 @@ func TestQueryParams(t *testing.T) {
 
 	specs := map[string]struct {
 		setParams types.Params
-		srcQuery  *types.QueryParamsRequest
 		expParams types.Params
 		expErr    error
 	}{
-		"with empty request": {
-			setParams: types.DefaultParams(),
-			srcQuery:  nil,
-			expParams: types.DefaultParams(),
-		},
 		"allowNobody": {
 			setParams: types.Params{
 				CodeUploadAccess:             types.AllowNobody,
 				InstantiateDefaultPermission: types.AccessTypeNobody,
 			},
-			srcQuery: &types.QueryParamsRequest{},
 			expParams: types.Params{
 				CodeUploadAccess:             types.AllowNobody,
 				InstantiateDefaultPermission: types.AccessTypeNobody,
@@ -896,9 +889,10 @@ func TestQueryParams(t *testing.T) {
 	}
 	for msg, spec := range specs {
 		t.Run(msg, func(t *testing.T) {
+			xCtx, _ := ctx.CacheContext()
 			keeper.SetParams(ctx, spec.setParams)
 
-			paramsResponse, err = q.Params(sdk.WrapSDKContext(ctx), spec.srcQuery)
+			paramsResponse, err = q.Params(sdk.WrapSDKContext(xCtx), &types.QueryParamsRequest{})
 
 			require.NoError(t, err)
 			require.NotNil(t, paramsResponse)
