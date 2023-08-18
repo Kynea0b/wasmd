@@ -890,7 +890,7 @@ func TestQueryParams(t *testing.T) {
 	for msg, spec := range specs {
 		t.Run(msg, func(t *testing.T) {
 			xCtx, _ := ctx.CacheContext()
-			keeper.SetParams(ctx, spec.setParams)
+			keeper.SetParams(xCtx, spec.setParams)
 
 			paramsResponse, err = q.Params(sdk.WrapSDKContext(xCtx), &types.QueryParamsRequest{})
 
