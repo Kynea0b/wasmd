@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cosmos/btcutil/bech32"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -54,6 +55,10 @@ func TestQueryAllContractState(t *testing.T) {
 		"query all with unknown address": {
 			srcQuery: &types.QueryAllContractStateRequest{Address: RandomBech32AccountAddress(t)},
 			expErr:   types.ErrNotFound,
+		},
+		"query all with invalid address": {
+			srcQuery: &types.QueryAllContractStateRequest{Address: "abcde"},
+			expErr:   bech32.ErrInvalidLength(5),
 		},
 		"with pagination offset": {
 			srcQuery: &types.QueryAllContractStateRequest{
@@ -119,6 +124,10 @@ func TestQueryAllContractState(t *testing.T) {
 		t.Run(msg, func(t *testing.T) {
 			got, err := q.AllContractState(sdk.WrapSDKContext(ctx), spec.srcQuery)
 			if spec.expErr != nil {
+				if errors.Is(err, spec.expErr) {
+					require.True(t, errors.Is(err, spec.expErr))
+					return
+				}
 				require.Equal(t, spec.expErr, err, "but got %+v", err)
 				return
 			}
@@ -162,6 +171,10 @@ func TestQuerySmartContractState(t *testing.T) {
 		"query smart with unknown address": {
 			srcQuery: &types.QuerySmartContractStateRequest{Address: RandomBech32AccountAddress(t), QueryData: []byte(`{"verifier":{}}`)},
 			expErr:   types.ErrNotFound,
+		},
+		"query smart with invalid address": {
+			srcQuery: &types.QuerySmartContractStateRequest{Address: "abcde", QueryData: []byte(`{"verifier":{}}`)},
+			expErr:   bech32.ErrInvalidLength(5),
 		},
 		"with empty request": {
 			srcQuery: nil,
