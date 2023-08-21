@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -42,6 +43,8 @@ func (q grpcQuerier) InactiveContracts(c context.Context, req *types.QueryInacti
 	prefixStore := prefix.NewStore(ctx.KVStore(q.storeKey), types.InactiveContractPrefix)
 	pageRes, err := query.FilteredPaginate(prefixStore, req.Pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
 		if accumulate {
+			fmt.Println(key[0:])
+			fmt.Println(value[0:])
 			contractAddress := sdk.AccAddress(value)
 			addresses = append(addresses, contractAddress.String())
 		}
