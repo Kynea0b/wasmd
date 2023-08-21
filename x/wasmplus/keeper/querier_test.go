@@ -43,7 +43,7 @@ func TestQueryInactiveContracts(t *testing.T) {
 		},
 		"query all": {
 			srcQuery:           &types.QueryInactiveContractsRequest{},
-			expAddrs:           []string{example1.Contract.String(), example2.Contract.String()},
+			expAddrs:           []string{example2.Contract.String(), example1.Contract.String()},
 			expPaginationTotal: 2,
 		},
 		"with pagination offset": {
@@ -76,10 +76,10 @@ func TestQueryInactiveContracts(t *testing.T) {
 		"with pagination next key": {
 			srcQuery: &types.QueryInactiveContractsRequest{
 				Pagination: &query.PageRequest{
-					Key: fromBase64("AAAAAAAAAAM="),
+					Key: fromBase64("reSl9YA6Q5g1xjY5Wo1kje5XsvyQ2Y3Bf6iHFZtpY4s="),
 				},
 			},
-			expAddrs:           []string{},
+			expAddrs:           []string{example1.Contract.String()},
 			expPaginationTotal: 0,
 		},
 	}
@@ -92,20 +92,10 @@ func TestQueryInactiveContracts(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
-			for _, expAddr := range spec.expAddrs {
-				assert.Contains(t, got.Addresses, expAddr)
-			}
+			assert.Equal(t, spec.expAddrs, got.Addresses)
 			assert.EqualValues(t, spec.expPaginationTotal, got.Pagination.Total)
 		})
 	}
-}
-
-func fromBase64(s string) []byte {
-	r, err := base64.StdEncoding.DecodeString(s)
-	if err != nil {
-		panic(err)
-	}
-	return r
 }
 
 func TestQueryInactiveContract(t *testing.T) {
@@ -158,4 +148,12 @@ func TestQueryInactiveContract(t *testing.T) {
 			require.True(t, got.Inactivated)
 		})
 	}
+}
+
+func fromBase64(s string) []byte {
+	r, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		panic(err)
+	}
+	return r
 }
