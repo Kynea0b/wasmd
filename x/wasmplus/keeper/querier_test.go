@@ -19,6 +19,11 @@ func TestQueryInactiveContracts(t *testing.T) {
 	ctx, keepers := CreateTestInput(t, false, AvailableCapabilities)
 	keeper := keepers.WasmKeeper
 
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
+	meter := sdk.NewGasMeter(2000000)
+	ctx = ctx.WithGasMeter(meter)
+	ctx = ctx.WithBlockGasMeter(meter)
+
 	example1 := InstantiateHackatomExampleContract(t, ctx, keepers)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 	example2 := InstantiateHackatomExampleContract(t, ctx, keepers)
