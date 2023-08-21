@@ -1025,3 +1025,63 @@ func fromBase64(s string) []byte {
 	}
 	return r
 }
+
+func TestQueryContractsByCode(t *testing.T) {
+	ctx, keepers := CreateTestInput(t, false, AvailableCapabilities)
+	keeper := keepers.WasmKeeper
+	q := Querier(keeper)
+
+	meter := sdk.NewGasMeter(1000000)
+	ctx = ctx.WithGasMeter(meter)
+	ctx = ctx.WithBlockGasMeter(meter)
+
+	example1 := InstantiateHackatomExampleContract(t, ctx, keepers)
+
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
+	meter = sdk.NewGasMeter(1000000)
+	ctx = ctx.WithGasMeter(meter)
+	ctx = ctx.WithBlockGasMeter(meter)
+
+	example2 := InstantiateHackatomExampleContract(t, ctx, keepers)
+
+	specs := map[string]struct {
+		req                *types.QueryContractsByCodeRequest
+		expAddr            []string
+		expPaginationTotal uint64
+		expErr             error
+	}{
+		"query all": {
+			req: &types.QueryContractsByCodeRequest{
+				CodeId: 2,
+			},
+			expAddr:            []string{example1.Contract.String(), example2.Contract.String()},
+			expPaginationTotal: 2,
+		},
+		// "with pagination offset": {
+		// 	req: &types.QueryContractsByCodeRequest{
+		// 		CodeId: 1,
+		// 		Pagination: &query.PageRequest{
+		// 			Offset: 1,
+		// 		},
+		// 	},
+		// 	expAddr:            []string{exampleContractAddr2},
+		// 	expPaginationTotal: 2,
+		// },
+	}
+	for msg, spec := range specs {
+		t.Run(msg, func(t *testing.T) {
+			got, err := q.ContractsByCode(sdk.WrapSDKContext(ctx), spec.req)
+
+			if spec.expErr != nil {
+				assert.NotNil(t, err)
+				assert.EqualError(t, err, spec.expErr.Error())
+				return
+			}
+			fmt.Println(spec.expAddr)
+			fmt.Println(got.Contracts)
+			// assert.EqualValues(t, spec.expPaginationTotal, got.Pagination.Total)
+			assert.NotNil(t, got)
+			// assert.Equal(t, spec.expAddr, got.Contracts)
+		})
+	}
+}

@@ -43,31 +43,50 @@ func TestQueryInactiveContracts_111(t *testing.T) {
 func TestQueryInactiveContracts(t *testing.T) {
 	ctx, keepers := CreateTestInput(t, false, AvailableCapabilities)
 	keeper := keepers.WasmKeeper
+	q := Querier(keeper)
+
+	// store contract
+	contract := StoreHackatomExampleContract(t, ctx, keepers)
+
+	createInitMsg := func(ctx sdk.Context, keepers TestKeepers) sdk.AccAddress {
+		_, _, verifierAddr := keyPubAddr()
+		fundAccounts(t, ctx, keepers.AccountKeeper, keepers.BankKeeper, verifierAddr, contract.InitialAmount)
+
+		_, _, beneficiaryAddr := keyPubAddr()
+		initMsgBz := HackatomExampleInitMsg{
+			Verifier:    verifierAddr,
+			Beneficiary: beneficiaryAddr,
+		}.GetBytes(t)
+		initialAmount := sdk.NewCoins(sdk.NewInt64Coin("denom", 100))
+
+		adminAddr := contract.CreatorAddr
+		label := "demo contract to query"
+		contractAddr, _, err := keepers.ContractKeeper.Instantiate(ctx, contract.CodeID, contract.CreatorAddr, adminAddr, initMsgBz, label, initialAmount)
+		fmt.Println(contract.CodeID)
+		require.NoError(t, err)
+		return contractAddr
+	}
 
 	meter := sdk.NewGasMeter(10000000)
 	ctx = ctx.WithGasMeter(meter)
 	ctx = ctx.WithBlockGasMeter(meter)
 
-	example1 := InstantiateHackatomExampleContract(t, ctx, keepers)
-	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
-	ctx = ctx.WithGasMeter(meter)
-	ctx = ctx.WithBlockGasMeter(meter)
-
-	example2 := InstantiateHackatomExampleContract(t, ctx, keepers)
-	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
-	ctx = ctx.WithGasMeter(meter)
-	ctx = ctx.WithBlockGasMeter(meter)
-
-	// set inactive
-	err := keeper.deactivateContract(ctx, example1.Contract)
+	// create 2 contracts with real block/gas setup
+	example1 := createInitMsg(ctx, keepers)
+	example2 := createInitMsg(ctx, keepers)
+	example3 := createInitMsg(ctx, keepers)
+	example4 := createInitMsg(ctx, keepers)
+	// // set inactive
+	err := keeper.deactivateContract(ctx, example1)
 	require.NoError(t, err)
-	err = keeper.deactivateContract(ctx, example2.Contract)
+	err = keeper.deactivateContract(ctx, example2)
 	require.NoError(t, err)
-
-	fmt.Println(example1.Contract.String())
-	fmt.Println(example2.Contract.String())
-
-	q := Querier(keeper)
+	err = keeper.deactivateContract(ctx, example3)
+	require.NoError(t, err)
+	err = keeper.deactivateContract(ctx, example4)
+	require.NoError(t, err)
+	de := []string{example1.String(), example2.String(), example3.String(), example4.String()}
+	fmt.Println(de)
 	specs := map[string]struct {
 		srcQuery           *types.QueryInactiveContractsRequest
 		expAddrs           []string
@@ -78,18 +97,18 @@ func TestQueryInactiveContracts(t *testing.T) {
 		// 	srcQuery: nil,
 		// 	expErr:   status.Error(codes.InvalidArgument, "empty request"),
 		// },
-		// "query all": {
-		// 	srcQuery:           &types.QueryInactiveContractsRequest{},
-		// 	expAddrs:           []string{example1.Contract.String(), example2.Contract.String()},
-		// 	expPaginationTotal: 2,
-		// },
+		"query all": {
+			srcQuery:           &types.QueryInactiveContractsRequest{},
+			expAddrs:           []string{example1.String(), example2.String(), example3.String(), example4.String()},
+			expPaginationTotal: 2,
+		},
 		"with pagination offset": {
 			srcQuery: &types.QueryInactiveContractsRequest{
 				Pagination: &query.PageRequest{
 					Offset: 1,
 				},
 			},
-			expAddrs:           []string{example2.Contract.String()},
+			expAddrs:           []string{example2.String()},
 			expPaginationTotal: 2,
 		},
 		// "with invalid pagination key": {
@@ -107,7 +126,7 @@ func TestQueryInactiveContracts(t *testing.T) {
 					Limit: 1,
 				},
 			},
-			expAddrs:           []string{example1.Contract.String()},
+			expAddrs:           []string{example1.String()},
 			expPaginationTotal: 0,
 		},
 		// "with pagination next key": {
@@ -129,11 +148,12 @@ func TestQueryInactiveContracts(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
-			for _, expAddr := range spec.expAddrs {
-				fmt.Println(got.Addresses)
-				fmt.Println(expAddr)
-				// assert.Contains(t, got.Addresses, expAddr)
-			}
+			fmt.Println(spec.expAddrs)
+			fmt.Println(got.Addresses)
+			// for _, expAddr := range spec.expAddrs {
+			// 	fmt.Println(got.Addresses)
+			// 	assert.Contains(t, got.Addresses, expAddr)
+			// }
 			assert.EqualValues(t, spec.expPaginationTotal, got.Pagination.Total)
 		})
 	}
