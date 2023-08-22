@@ -58,7 +58,7 @@ func TestQueryAllContractState(t *testing.T) {
 		},
 		"query all with invalid address": {
 			srcQuery: &types.QueryAllContractStateRequest{Address: "abcde"},
-			expErr:   bech32.ErrInvalidLength(5),
+			expErr:   fmt.Errorf("decoding bech32 failed: %w", bech32.ErrInvalidLength(5)),
 		},
 		"with pagination offset": {
 			srcQuery: &types.QueryAllContractStateRequest{
@@ -124,10 +124,6 @@ func TestQueryAllContractState(t *testing.T) {
 		t.Run(msg, func(t *testing.T) {
 			got, err := q.AllContractState(sdk.WrapSDKContext(ctx), spec.srcQuery)
 			if spec.expErr != nil {
-				if errors.Is(err, spec.expErr) {
-					require.True(t, errors.Is(err, spec.expErr))
-					return
-				}
 				require.Equal(t, spec.expErr, err, "but got %+v", err)
 				return
 			}
