@@ -744,7 +744,7 @@ func Decode(text string) (string, []byte, error) {
 	return hrp, converted, nil
 }
 
-func CreateOrderedAddresses(addrs ...sdk.AccAddress) []string {
+func CreateOrderedAddresses(addrs ...sdk.AccAddress) ([]string, error) {
 	// Address order of contracts is ascending order of byte array whose address is decoded by bech32
 	byteAddrs := make([][]byte, len(addrs))
 
@@ -752,7 +752,7 @@ func CreateOrderedAddresses(addrs ...sdk.AccAddress) []string {
 		var err error
 		_, byteAddrs[i], err = Decode(addr.String())
 		if err != nil {
-			panic("decoding bech32 failed, so make sure the address is bech32 encode")
+			return nil, fmt.Errorf("decoding bech32 failed, so make sure the address is bech32 encode %w", err)
 		}
 	}
 
@@ -762,8 +762,8 @@ func CreateOrderedAddresses(addrs ...sdk.AccAddress) []string {
 		var err error
 		expAddrs[i], err = Encode("link", v)
 		if err != nil {
-			panic("encoding bech32 failed")
+			return nil, fmt.Errorf("encoding to link address failed %w", err)
 		}
 	}
-	return expAddrs
+	return expAddrs, nil
 }

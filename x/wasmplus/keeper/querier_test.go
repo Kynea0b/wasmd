@@ -25,10 +25,11 @@ func TestQueryInactiveContracts(t *testing.T) {
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// Address order of contracts is ascending order of byte array whose address is decoded by bech32
-	expAddrs := CreateOrderedAddresses(example1.Contract, example2.Contract)
+	expAddrs, err := CreateOrderedAddresses(example1.Contract, example2.Contract)
+	require.NoError(t, err)
 
 	// set inactive
-	err := keeper.deactivateContract(ctx, example1.Contract)
+	err = keeper.deactivateContract(ctx, example1.Contract)
 	require.NoError(t, err)
 	err = keeper.deactivateContract(ctx, example2.Contract)
 	require.NoError(t, err)
