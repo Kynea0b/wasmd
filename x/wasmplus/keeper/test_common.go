@@ -702,7 +702,7 @@ func CreateOrderedAddresses(addrs ...[]byte) []string {
 		return string(byteAddrs[i]) < string(byteAddrs[j])
 	})
 
-	//var sortedAddress []string
+	// copy sorted addresses to []string
 	expAddrs := make([]string, len(addrs))
 	for i, b := range byteAddrs {
 		expAddrs[i] = sdk.AccAddress(b).String()
