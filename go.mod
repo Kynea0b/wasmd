@@ -6,6 +6,7 @@ require (
 	github.com/Finschia/finschia-sdk v0.48.0-rc1
 	github.com/Finschia/ostracon v1.1.1
 	github.com/Finschia/wasmvm v1.1.1-0.11.2.0.20230418093236-ce70a3856778
+	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
 	github.com/cosmos/iavl v0.19.4
 	github.com/cosmos/ibc-go/v4 v4.3.1
 	github.com/dvsekhvalnov/jose2go v1.5.0

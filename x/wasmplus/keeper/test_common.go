@@ -716,16 +716,23 @@ func (b sortByteArrays) Swap(i, j int) {
 	b[j], b[i] = b[i], b[j]
 }
 
-// Public
 func SortByteArrays(src [][]byte) [][]byte {
 	sorted := sortByteArrays(src)
 	sort.Sort(sorted)
 	return sorted
 }
 
+// Encode encodes 8-bits per byte byte-slice to a Bech32-encoded string.
+func Encode(hrp string, data []byte) (string, error) {
+	converted, err := bech32.ConvertBits(data, 8, 5, true)
+	if err != nil {
+		return "", fmt.Errorf("encoding bech32 failed: %w", err)
+	}
+	return bech32.Encode(hrp, converted)
+}
+
 // Decode decodes a Bech32-encoded string to a 8-bits per byte byte-slice.
 func Decode(text string) (string, []byte, error) {
-	// NOTE: Taken from github.com/tendermint/tendermint/libs/bech32 (licensed under Apache-2).
 	hrp, data, err := bech32.Decode(text)
 	if err != nil {
 		return "", nil, fmt.Errorf("decoding bech32 failed: %w", err)
@@ -735,4 +742,19 @@ func Decode(text string) (string, []byte, error) {
 		return "", nil, fmt.Errorf("decoding bech32 failed: %w", err)
 	}
 	return hrp, converted, nil
+}
+
+func CreateOrderedAddresses(addrs ...sdk.AccAddress) []string {
+	// Address order of contracts is ascending order of byte array whose address is decoded by bech32
+	byteAddrs := make([][]byte, len(addrs))
+	for i, addr := range addrs {
+		_, byteAddrs[i], _ = Decode(addr.String())
+	}
+	sortedByteAddrs := SortByteArrays(byteAddrs)
+	expAddrs := make([]string, len(sortedByteAddrs))
+	for i, v := range sortedByteAddrs {
+		expAddrs[i], _ = Encode("link", v)
+		fmt.Println(expAddrs[i])
+	}
+	return expAddrs
 }
