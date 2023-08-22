@@ -691,19 +691,12 @@ func keyPubAddr() (crypto.PrivKey, crypto.PubKey, sdk.AccAddress) {
 }
 
 func CreateOrderedAddresses(addrs ...[]byte) []string {
-	// Address order of contracts is ascending order of byte array whose address is decoded by bech32
-	byteAddrs := make([][]byte, len(addrs))
-
-	for i, addr := range addrs {
-		byteAddrs[i] = addr
-	}
-
-	sort.Slice(byteAddrs, func(i, j int) bool {
-		return string(byteAddrs[i]) < string(byteAddrs[j])
+	sort.Slice(addrs, func(i, j int) bool {
+		return string(addrs[i]) < string(addrs[j])
 	})
 
 	expAddrs := make([]string, len(addrs))
-	for i, b := range byteAddrs {
+	for i, b := range addrs {
 		expAddrs[i] = sdk.AccAddress(b).String()
 	}
 
