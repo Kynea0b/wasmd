@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/btcsuite/btcutil/bech32"
+
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
@@ -719,4 +721,18 @@ func SortByteArrays(src [][]byte) [][]byte {
 	sorted := sortByteArrays(src)
 	sort.Sort(sorted)
 	return sorted
+}
+
+// Decode decodes a Bech32-encoded string to a 8-bits per byte byte-slice.
+func Decode(text string) (string, []byte, error) {
+	// NOTE: Taken from github.com/tendermint/tendermint/libs/bech32 (licensed under Apache-2).
+	hrp, data, err := bech32.Decode(text)
+	if err != nil {
+		return "", nil, fmt.Errorf("decoding bech32 failed: %w", err)
+	}
+	converted, err := bech32.ConvertBits(data, 5, 8, false)
+	if err != nil {
+		return "", nil, fmt.Errorf("decoding bech32 failed: %w", err)
+	}
+	return hrp, converted, nil
 }
