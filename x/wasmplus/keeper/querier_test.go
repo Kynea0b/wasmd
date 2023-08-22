@@ -23,14 +23,18 @@ func TestQueryInactiveContracts(t *testing.T) {
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 	example2 := InstantiateHackatomExampleContract(t, ctx, keepers)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
+	example3 := InstantiateHackatomExampleContract(t, ctx, keepers)
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// Address order of contracts is ascending order of byte array whose address is decoded by bech32
-	expAddrs := CreateOrderedAddresses(example1.Contract.Bytes(), example2.Contract.Bytes())
+	expAddrs := GenerateSortedBech32Address(example1.Contract.Bytes(), example2.Contract.Bytes(), example3.Contract.Bytes())
 
 	// set inactive
 	err := keeper.deactivateContract(ctx, example1.Contract)
 	require.NoError(t, err)
 	err = keeper.deactivateContract(ctx, example2.Contract)
+	require.NoError(t, err)
+	err = keeper.deactivateContract(ctx, example3.Contract)
 	require.NoError(t, err)
 
 	q := Querier(keeper)
@@ -47,7 +51,7 @@ func TestQueryInactiveContracts(t *testing.T) {
 		"query all": {
 			srcQuery:           &types.QueryInactiveContractsRequest{},
 			expAddrs:           expAddrs,
-			expPaginationTotal: 2,
+			expPaginationTotal: 3,
 		},
 		"with pagination offset": {
 			srcQuery: &types.QueryInactiveContractsRequest{
@@ -55,8 +59,8 @@ func TestQueryInactiveContracts(t *testing.T) {
 					Offset: 1,
 				},
 			},
-			expAddrs:           []string{expAddrs[1]},
-			expPaginationTotal: 2,
+			expAddrs:           []string{expAddrs[1], expAddrs[2]},
+			expPaginationTotal: 3,
 		},
 		"with invalid pagination key": {
 			srcQuery: &types.QueryInactiveContractsRequest{
@@ -82,7 +86,7 @@ func TestQueryInactiveContracts(t *testing.T) {
 					Key: fromBase64("reSl9YA6Q5g1xjY5Wo1kje5XsvyQ2Y3Bf6iHFZtpY4s="),
 				},
 			},
-			expAddrs:           []string{expAddrs[1]},
+			expAddrs:           []string{expAddrs[1], expAddrs[2]},
 			expPaginationTotal: 0,
 		},
 	}

@@ -690,7 +690,7 @@ func keyPubAddr() (crypto.PrivKey, crypto.PubKey, sdk.AccAddress) {
 	return key, pub, addr
 }
 
-func CreateOrderedAddresses(addrs ...[]byte) []string {
+func GenerateSortedBech32Address(addrs ...[]byte) []string {
 	sort.Slice(addrs, func(i, j int) bool {
 		return string(addrs[i]) < string(addrs[j])
 	})
