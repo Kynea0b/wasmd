@@ -10,8 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/btcsuite/btcutil/bech32"
-
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
@@ -692,77 +690,23 @@ func keyPubAddr() (crypto.PrivKey, crypto.PubKey, sdk.AccAddress) {
 	return key, pub, addr
 }
 
-// implement `Interface` in sort package.
-type sortByteArrays [][]byte
-
-func (b sortByteArrays) Len() int {
-	return len(b)
-}
-
-func (b sortByteArrays) Less(i, j int) bool {
-	// bytes package already implements Comparable for []byte.
-	switch bytes.Compare(b[i], b[j]) {
-	case -1:
-		return true
-	case 0, 1:
-		return false
-	default:
-		panic("Not defined.")
-	}
-}
-
-func (b sortByteArrays) Swap(i, j int) {
-	b[j], b[i] = b[i], b[j]
-}
-
-func SortByteArrays(src [][]byte) [][]byte {
-	sorted := sortByteArrays(src)
-	sort.Sort(sorted)
-	return sorted
-}
-
-// Encode encodes 8-bits per byte byte-slice to a Bech32-encoded string.
-func Encode(hrp string, data []byte) (string, error) {
-	converted, err := bech32.ConvertBits(data, 8, 5, true)
-	if err != nil {
-		return "", fmt.Errorf("encoding bech32 failed: %w", err)
-	}
-	return bech32.Encode(hrp, converted)
-}
-
-// Decode decodes a Bech32-encoded string to a 8-bits per byte byte-slice.
-func Decode(text string) (string, []byte, error) {
-	hrp, data, err := bech32.Decode(text)
-	if err != nil {
-		return "", nil, fmt.Errorf("decoding bech32 failed: %w", err)
-	}
-	converted, err := bech32.ConvertBits(data, 5, 8, false)
-	if err != nil {
-		return "", nil, fmt.Errorf("decoding bech32 failed: %w", err)
-	}
-	return hrp, converted, nil
-}
-
-func CreateOrderedAddresses(addrs ...sdk.AccAddress) ([]string, error) {
+func CreateOrderedAddresses(addrs ...[]byte) []string {
 	// Address order of contracts is ascending order of byte array whose address is decoded by bech32
 	byteAddrs := make([][]byte, len(addrs))
 
 	for i, addr := range addrs {
-		var err error
-		_, byteAddrs[i], err = Decode(addr.String())
-		if err != nil {
-			return nil, fmt.Errorf("decoding bech32 failed, so make sure the address is bech32 encode %w", err)
-		}
+		byteAddrs[i] = addr
 	}
 
-	sortedByteAddrs := SortByteArrays(byteAddrs)
-	expAddrs := make([]string, len(sortedByteAddrs))
-	for i, v := range sortedByteAddrs {
-		var err error
-		expAddrs[i], err = Encode("link", v)
-		if err != nil {
-			return nil, fmt.Errorf("encoding to link address failed %w", err)
-		}
+	sort.Slice(byteAddrs, func(i, j int) bool {
+		return string(byteAddrs[i]) < string(byteAddrs[j])
+	})
+
+	//var sortedAddress []string
+	expAddrs := make([]string, len(addrs))
+	for i, b := range byteAddrs {
+		expAddrs[i] = sdk.AccAddress(b).String()
 	}
-	return expAddrs, nil
+
+	return expAddrs
 }
