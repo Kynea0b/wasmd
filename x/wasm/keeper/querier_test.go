@@ -276,6 +276,10 @@ func TestQueryRawContractState(t *testing.T) {
 			srcQuery: &types.QueryRawContractStateRequest{Address: RandomBech32AccountAddress(t), QueryData: []byte("foo")},
 			expErr:   types.ErrNotFound,
 		},
+		"query raw with invalid address": {
+			srcQuery: &types.QueryRawContractStateRequest{Address: "abcde", QueryData: []byte("foo")},
+			expErr:   bech32.ErrInvalidLength(5),
+		},
 		"with empty request": {
 			srcQuery: nil,
 			expErr:   status.Error(codes.InvalidArgument, "empty request"),

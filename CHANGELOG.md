@@ -18,7 +18,11 @@
 * [\#78](https://github.com/Finschia/wasmd/pull/78) add the check for TestMigrateContract
 * [\#69](https://github.com/Finschia/wasmd/pull/69) refactor: refactor test cases for Params
 * [\#71](https://github.com/Finschia/wasmd/pull/71) add test cases in ContractsByCode
+<<<<<<< HEAD
 * [\#82](https://github.com/Finschia/wasmd/pull/82) add test case to QueryInactiveContracts
+=======
+* [\#88](https://github.com/Finschia/wasmd/pull/88) add the test case for invalid address
+>>>>>>> origin/test-invalid-address
 
 ### Bug Fixes
 * [\#62](https://github.com/Finschia/wasmd/pull/62) fill ContractHistory querier result's Updated field
