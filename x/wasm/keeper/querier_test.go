@@ -646,6 +646,16 @@ func TestQueryContractHistory(t *testing.T) {
 			}},
 			expErr: types.ErrEmpty,
 		},
+		"query with invalid address": {
+			req: &types.QueryContractHistoryRequest{Address: "abcde"},
+			srcHistory: []types.ContractCodeHistoryEntry{{
+				Operation: types.ContractCodeHistoryOperationTypeGenesis,
+				CodeID:    firstCodeID,
+				Updated:   types.NewAbsoluteTxPosition(ctx),
+				Msg:       []byte(`"init message"`),
+			}},
+			expErr: fmt.Errorf("decoding bech32 failed: %w", bech32.ErrInvalidLength(5)),
+		},
 		"with empty request": {
 			req:    nil,
 			expErr: status.Error(codes.InvalidArgument, "empty request"),
@@ -884,6 +894,10 @@ func TestQueryContractInfo(t *testing.T) {
 			src:    &types.QueryContractInfoRequest{Address: RandomBech32AccountAddress(t)},
 			stored: types.ContractInfoFixture(),
 			expErr: types.ErrNotFound,
+		},
+		"query with invalid address": {
+			src:    &types.QueryContractInfoRequest{Address: "abcde"},
+			expErr: bech32.ErrInvalidLength(5),
 		},
 		"with empty request": {
 			src:    nil,
