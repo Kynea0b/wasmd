@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	_ "embed"
-	"reflect"
 	"testing"
 	"time"
 
@@ -111,7 +110,7 @@ func TestStoreAndInstantiateContract(t *testing.T) {
 			require.NoError(t, wasmApp.AppCodec().Unmarshal(rsp.Data, &storeAndInstantiateResponse))
 
 			// check event
-			assert.True(t, reflect.DeepEqual(spec.events, rsp.Events))
+			assert.Equal(t, spec.events, rsp.Events)
 
 			require.NoError(t, err)
 		})
