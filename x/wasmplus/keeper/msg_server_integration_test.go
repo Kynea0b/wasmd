@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	_ "embed"
+	"reflect"
 	"testing"
 	"time"
 
@@ -110,23 +111,7 @@ func TestStoreAndInstantiateContract(t *testing.T) {
 			require.NoError(t, wasmApp.AppCodec().Unmarshal(rsp.Data, &storeAndInstantiateResponse))
 
 			// check event
-			events := rsp.Events
-			assert.Equal(t, 3, len(events))
-			assert.Equal(t, spec.events[0].Type, events[0].Type)
-			assert.Equal(t, len(spec.events[0].Attributes), len(events[0].Attributes))
-			assert.Equal(t, string(spec.events[0].Attributes[0].Key), string(events[0].Attributes[0].Key))
-			assert.Equal(t, string(spec.events[0].Attributes[1].Key), string(events[0].Attributes[1].Key))
-			assert.Equal(t, string(spec.events[0].Attributes[1].Value), string(events[0].Attributes[1].Value))
-			assert.Equal(t, spec.events[1].Type, events[1].Type)
-			assert.Equal(t, len(spec.events[1].Attributes), len(events[1].Attributes))
-			assert.Equal(t, string(spec.events[1].Attributes[0].Key), string(events[1].Attributes[0].Key))
-			assert.Equal(t, string(spec.events[1].Attributes[0].Value), string(events[1].Attributes[0].Value))
-			assert.Equal(t, string(spec.events[1].Attributes[1].Key), string(events[1].Attributes[1].Key))
-			assert.Equal(t, spec.events[2].Type, events[2].Type)
-			assert.Equal(t, string(spec.events[2].Attributes[0].Key), string(events[2].Attributes[0].Key))
-			assert.Equal(t, storeAndInstantiateResponse.Address, string(events[2].Attributes[0].Value))
-			assert.Equal(t, string(spec.events[2].Attributes[1].Key), string(events[2].Attributes[1].Key))
-			assert.Equal(t, string(spec.events[2].Attributes[1].Value), string(events[2].Attributes[1].Value))
+			assert.True(t, reflect.DeepEqual(spec.events, rsp.Events))
 
 			require.NoError(t, err)
 		})
