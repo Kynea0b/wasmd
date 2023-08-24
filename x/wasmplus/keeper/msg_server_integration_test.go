@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	abcitypes "github.com/tendermint/tendermint/abci/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	sdk "github.com/Finschia/finschia-sdk/types"
@@ -32,15 +32,15 @@ func TestStoreAndInstantiateContract(t *testing.T) {
 	specs := map[string]struct {
 		addr       string
 		permission *wasmtypes.AccessConfig
-		events     []abcitypes.Event
+		events     []abci.Event
 		expErr     bool
 	}{
 		"address can instantiate a contract when permission is everybody": {
 			addr:       myAddress.String(),
 			permission: &wasmtypes.AllowEverybody,
-			events: []abcitypes.Event{{
+			events: []abci.Event{{
 				Type: "store_code",
-				Attributes: []abcitypes.EventAttribute{abcitypes.EventAttribute{
+				Attributes: []abci.EventAttribute{abci.EventAttribute{
 					Key:   []byte("code_checksum"),
 					Value: []byte("2843664c3b6c1de8bdeca672267c508aeb79bb947c87f75d8053f971d8658c89"),
 					Index: false,
@@ -52,7 +52,7 @@ func TestStoreAndInstantiateContract(t *testing.T) {
 				},
 			}, {
 				Type: "message",
-				Attributes: []abcitypes.EventAttribute{abcitypes.EventAttribute{
+				Attributes: []abci.EventAttribute{abci.EventAttribute{
 					Key:   []byte("module"),
 					Value: []byte("wasm"),
 					Index: false,
@@ -65,7 +65,7 @@ func TestStoreAndInstantiateContract(t *testing.T) {
 			},
 				{
 					Type: "instantiate",
-					Attributes: []abcitypes.EventAttribute{abcitypes.EventAttribute{
+					Attributes: []abci.EventAttribute{abci.EventAttribute{
 						Key:   []byte("_contract_address"),
 						Value: []byte("link14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sgf2vn8"),
 						Index: false,
