@@ -32,13 +32,13 @@ func TestStoreAndInstantiateContract(t *testing.T) {
 	specs := map[string]struct {
 		addr       string
 		permission *wasmtypes.AccessConfig
-		events     []abci.Event
+		expEvents  []abci.Event
 		expErr     bool
 	}{
 		"address can instantiate a contract when permission is everybody": {
 			addr:       myAddress.String(),
 			permission: &wasmtypes.AllowEverybody,
-			events: []abci.Event{{
+			expEvents: []abci.Event{{
 				Type: "store_code",
 				Attributes: []abci.EventAttribute{abci.EventAttribute{
 					Key:   []byte("code_checksum"),
@@ -110,7 +110,7 @@ func TestStoreAndInstantiateContract(t *testing.T) {
 			require.NoError(t, wasmApp.AppCodec().Unmarshal(rsp.Data, &storeAndInstantiateResponse))
 
 			// check event
-			assert.Equal(t, spec.events, rsp.Events)
+			assert.Equal(t, spec.expEvents, rsp.Events)
 
 			require.NoError(t, err)
 		})
