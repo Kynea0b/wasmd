@@ -27,14 +27,14 @@ func TestStoreAndInstantiateContract(t *testing.T) {
 	ctx := wasmApp.BaseApp.NewContext(false, tmproto.Header{Time: time.Now()})
 
 	var (
-		myAddress sdktypes.AccAddress = make([]byte, wasmtypes.ContractAddrLen)
+		myAddress sdk.AccAddress = make([]byte, wasmtypes.ContractAddrLen)
 	)
 
 	specs := map[string]struct {
 		addr       string
 		permission *wasmtypes.AccessConfig
-		expErr     bool
 		events     []abcitypes.Event
+		expErr     bool
 	}{
 		"address can instantiate a contract when permission is everybody": {
 			addr:       myAddress.String(),
@@ -59,7 +59,7 @@ func TestStoreAndInstantiateContract(t *testing.T) {
 					Index: false,
 				}, {
 					Key:   []byte("sender"),
-					Value: []byte("link1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqjhjmun"),
+					Value: []byte(myAddress.String()),
 					Index: false,
 				},
 				},
@@ -97,7 +97,7 @@ func TestStoreAndInstantiateContract(t *testing.T) {
 				Admin:                 myAddress.String(),
 				Label:                 "test",
 				Msg:                   []byte(`{}`),
-				Funds:                 sdktypes.Coins{},
+				Funds:                 sdk.Coins{},
 			}
 			rsp, err := wasmApp.MsgServiceRouter().Handler(msg)(xCtx, msg)
 
