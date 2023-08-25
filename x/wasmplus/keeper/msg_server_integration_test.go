@@ -36,30 +36,34 @@ func TestStoreAndInstantiateContract(t *testing.T) {
 		"address can instantiate a contract when permission is everybody": {
 			addr:       myAddress.String(),
 			permission: &wasmtypes.AllowEverybody,
-			expEvents: []abci.Event{{
-				Type: "store_code",
-				Attributes: []abci.EventAttribute{abci.EventAttribute{
-					Key:   []byte("code_checksum"),
-					Value: []byte("2843664c3b6c1de8bdeca672267c508aeb79bb947c87f75d8053f971d8658c89"),
-					Index: false,
-				}, {
-					Key:   []byte("code_id"),
-					Value: []byte("1"),
-					Index: false,
+			expEvents: []abci.Event{
+				{
+					Type: "store_code",
+					Attributes: []abci.EventAttribute{
+						{
+							Key:   []byte("code_checksum"),
+							Value: []byte("2843664c3b6c1de8bdeca672267c508aeb79bb947c87f75d8053f971d8658c89"),
+							Index: false,
+						}, {
+							Key:   []byte("code_id"),
+							Value: []byte("1"),
+							Index: false,
+						},
+					},
 				},
-				},
-			}, createMsgEvent(myAddress),
+				createMsgEvent(myAddress),
 				{
 					Type: "instantiate",
-					Attributes: []abci.EventAttribute{abci.EventAttribute{
-						Key:   []byte("_contract_address"),
-						Value: []byte("link14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sgf2vn8"),
-						Index: false,
-					}, {
-						Key:   []byte("code_id"),
-						Value: []byte("1"),
-						Index: false,
-					},
+					Attributes: []abci.EventAttribute{
+						{
+							Key:   []byte("_contract_address"),
+							Value: []byte("link14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sgf2vn8"),
+							Index: false,
+						}, {
+							Key:   []byte("code_id"),
+							Value: []byte("1"),
+							Index: false,
+						},
 					},
 				},
 			},
@@ -112,10 +116,12 @@ func createMsgEvent(sender sdk.AccAddress) abci.Event {
 			{
 				Key:   []byte("module"),
 				Value: []byte("wasm"),
+				Index: false,
 			},
 			{
 				Key:   []byte("sender"),
 				Value: []byte(sender.String()),
+				Index: false,
 			},
 		},
 	}
