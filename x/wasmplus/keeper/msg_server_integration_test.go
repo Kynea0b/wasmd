@@ -50,19 +50,7 @@ func TestStoreAndInstantiateContract(t *testing.T) {
 					Index: false,
 				},
 				},
-			}, {
-				Type: "message",
-				Attributes: []abci.EventAttribute{abci.EventAttribute{
-					Key:   []byte("module"),
-					Value: []byte("wasm"),
-					Index: false,
-				}, {
-					Key:   []byte("sender"),
-					Value: []byte(myAddress.String()),
-					Index: false,
-				},
-				},
-			},
+			}, createMsgEvent(myAddress),
 				{
 					Type: "instantiate",
 					Attributes: []abci.EventAttribute{abci.EventAttribute{
@@ -114,5 +102,23 @@ func TestStoreAndInstantiateContract(t *testing.T) {
 
 			require.NoError(t, err)
 		})
+	}
+}
+
+// This function is utilized to generate the msg event for event checking in integration tests
+// It will be deleted in release/v0.1.x
+func createMsgEvent(sender sdk.AccAddress) abci.Event {
+	return abci.Event{
+		Type: "message",
+		Attributes: []abci.EventAttribute{
+			{
+				Key:   []byte("module"),
+				Value: []byte("wasm"),
+			},
+			{
+				Key:   []byte("sender"),
+				Value: []byte(sender.String()),
+			},
+		},
 	}
 }
