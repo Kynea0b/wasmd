@@ -73,9 +73,7 @@ func TestInstantiateContract(t *testing.T) {
 	wasmApp := app.Setup(false)
 	ctx := wasmApp.BaseApp.NewContext(false, tmproto.Header{Time: time.Now()})
 
-	var (
-		myAddress sdk.AccAddress = make([]byte, types.ContractAddrLen)
-	)
+	var myAddress sdk.AccAddress = make([]byte, types.ContractAddrLen)
 
 	specs := map[string]struct {
 		addr       string
@@ -121,7 +119,7 @@ func TestInstantiateContract(t *testing.T) {
 			}
 			rsp, err = wasmApp.MsgServiceRouter().Handler(msgInstantiate)(xCtx, msgInstantiate)
 
-			//then
+			// then
 			if spec.expErr {
 				require.Error(t, err)
 				return
@@ -152,9 +150,7 @@ func TestInstantiateContract2(t *testing.T) {
 	wasmApp := app.Setup(false)
 	ctx := wasmApp.BaseApp.NewContext(false, tmproto.Header{Time: time.Now()})
 
-	var (
-		myAddress sdk.AccAddress = make([]byte, types.ContractAddrLen)
-	)
+	var myAddress sdk.AccAddress = make([]byte, types.ContractAddrLen)
 
 	specs := map[string]struct {
 		addr       string
@@ -205,7 +201,7 @@ func TestInstantiateContract2(t *testing.T) {
 			}
 			rsp, err = wasmApp.MsgServiceRouter().Handler(msgInstantiate)(xCtx, msgInstantiate)
 
-			//then
+			// then
 			if spec.expErr {
 				require.Error(t, err)
 				return
@@ -381,7 +377,7 @@ func TestExecuteContract(t *testing.T) {
 		addr   string
 		expErr bool
 	}{
-		"adress can execute a contract": {
+		"address can execute a contract": {
 			addr:   myAddress.String(),
 			expErr: false,
 		},
@@ -484,7 +480,19 @@ func TestUpdateAdmin(t *testing.T) {
 			addr:   myAddress.String(),
 			expErr: false,
 			expEvents: []abci.Event{
-				createMsgEvent(myAddress),
+				{
+					Type: "message",
+					Attributes: []abci.EventAttribute{
+						{
+							Key:   []byte("module"),
+							Value: []byte("wasm"),
+						},
+						{
+							Key:   []byte("sender"),
+							Value: []byte(myAddress.String()),
+						},
+					},
+				},
 				{
 					Type: "update_contract_admin",
 					Attributes: []abci.EventAttribute{
@@ -625,12 +633,10 @@ func createMsgEvent(sender sdk.AccAddress) abci.Event {
 			{
 				Key:   []byte("module"),
 				Value: []byte("wasm"),
-				Index: false,
 			},
 			{
 				Key:   []byte("sender"),
 				Value: []byte(sender.String()),
-				Index: false,
 			},
 		},
 	}
