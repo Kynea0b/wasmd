@@ -82,7 +82,7 @@ var xxx_messageInfo_QueryInactiveContractsRequest proto.InternalMessageInfo
 // QueryInactiveContractsResponse is the response type for the
 // Query/InactiveContract RPC method.
 type QueryInactiveContractsResponse struct {
-	// addresses is the inactive address list
+	// addresses is the inactive address list of byte arrays ordered in ascending order
 	Addresses []string `protobuf:"bytes,1,rep,name=addresses,proto3" json:"addresses,omitempty"`
 	// pagination defines the pagination in the response
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
