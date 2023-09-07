@@ -1508,7 +1508,7 @@ Query/InactiveContract RPC method.
 
 | Field | Type | Label | Description                                                                     |
 | ----- | ---- | ----- |---------------------------------------------------------------------------------|
-| `addresses` | [string](#string) | repeated | addresses is the inactive address list of byte arrays ordered in ascending order |
+| `addresses` | [string](#string) | repeated | addresses is the inactive address list of strings, in ascending order of byte format |
 | `pagination` | [cosmos.base.query.v1beta1.PageResponse](#cosmos.base.query.v1beta1.PageResponse) |  | pagination defines the pagination in the response                               |
 
 
